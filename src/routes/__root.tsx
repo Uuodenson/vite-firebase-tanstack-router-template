@@ -8,6 +8,7 @@ import { signOut } from "../helpers/auth";
 import { useAuthContext } from "../helpers/authContext";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
+import {Settings, Home, BookMarked, LogIn, LogOut} from "lucide-react";
 
 interface MyRouterContext {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,7 +32,7 @@ function RootComponent() {
           }}
           activeOptions={{ exact: true }}
         >
-          Home
+          <Home></Home>
         </Link>{" "}
         <Link
           to={"/about"}
@@ -39,7 +40,10 @@ function RootComponent() {
             className: "font-bold",
           }}
         >
-          About
+          <BookMarked></BookMarked>
+        </Link>
+        <Link to={"/profile"} activeProps={{ className: "font-bold" }}>
+          <Settings></Settings>
         </Link>
         {user ? (
           <Button
@@ -47,7 +51,7 @@ function RootComponent() {
               signOut();
             }}
           >
-            Sign Out
+            <LogOut></LogOut>
           </Button>
         ) : (
           <Link
@@ -56,7 +60,7 @@ function RootComponent() {
               className: "font-bold",
             }}
           >
-            Sign In
+            <LogIn></LogIn>
           </Link>
         )}
       </div>
