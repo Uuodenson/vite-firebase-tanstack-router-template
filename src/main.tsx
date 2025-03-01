@@ -28,7 +28,7 @@ function InnerApp() {
 function App() {
   return (
     <AuthContextProvider>
-      <InnerApp />
+      <InnerApp/>
     </AuthContextProvider>
   );
 }
