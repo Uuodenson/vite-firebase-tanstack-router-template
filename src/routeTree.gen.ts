@@ -19,8 +19,11 @@ import { Route as rootRoute } from './routes/__root'
 const SignupLazyImport = createFileRoute('/signup')()
 const SigninLazyImport = createFileRoute('/signin')()
 const ProfileLazyImport = createFileRoute('/profile')()
+const JournalLazyImport = createFileRoute('/journal')()
 const EmotionsLazyImport = createFileRoute('/emotions')()
+const EmergencyLazyImport = createFileRoute('/emergency')()
 const ChatLazyImport = createFileRoute('/chat')()
+const BookLazyImport = createFileRoute('/book')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 
@@ -41,15 +44,30 @@ const ProfileLazyRoute = ProfileLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
 
+const JournalLazyRoute = JournalLazyImport.update({
+  path: '/journal',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/journal.lazy').then((d) => d.Route))
+
 const EmotionsLazyRoute = EmotionsLazyImport.update({
   path: '/emotions',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/emotions.lazy').then((d) => d.Route))
 
+const EmergencyLazyRoute = EmergencyLazyImport.update({
+  path: '/emergency',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/emergency.lazy').then((d) => d.Route))
+
 const ChatLazyRoute = ChatLazyImport.update({
   path: '/chat',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/chat.lazy').then((d) => d.Route))
+
+const BookLazyRoute = BookLazyImport.update({
+  path: '/book',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/book.lazy').then((d) => d.Route))
 
 const AboutLazyRoute = AboutLazyImport.update({
   path: '/about',
@@ -73,12 +91,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
+    '/book': {
+      preLoaderRoute: typeof BookLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/chat': {
       preLoaderRoute: typeof ChatLazyImport
       parentRoute: typeof rootRoute
     }
+    '/emergency': {
+      preLoaderRoute: typeof EmergencyLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/emotions': {
       preLoaderRoute: typeof EmotionsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/journal': {
+      preLoaderRoute: typeof JournalLazyImport
       parentRoute: typeof rootRoute
     }
     '/profile': {
@@ -101,8 +131,11 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   IndexLazyRoute,
   AboutLazyRoute,
+  BookLazyRoute,
   ChatLazyRoute,
+  EmergencyLazyRoute,
   EmotionsLazyRoute,
+  JournalLazyRoute,
   ProfileLazyRoute,
   SigninLazyRoute,
   SignupLazyRoute,

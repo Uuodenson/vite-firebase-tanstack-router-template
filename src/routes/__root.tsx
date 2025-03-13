@@ -23,55 +23,109 @@ function RootComponent() {
   const { user } = useAuthContext();
 
   return (
-    <>
-      <div className="p-4 flex gap-2 text-lg items-center justify-center md:justify-start">
-        <Link
-          to="/"
-          className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
-          activeProps={{ className: "font-bold" }}
-          activeOptions={{ exact: true }}
-        >
-          <Home></Home>
-        </Link>
-        <Link
-          to={"/about"}
-          activeProps={{
-            className: "font-bold",
-          }}
-          className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
-        >
-          <BookMarked></BookMarked>
-        </Link>
-        <Link to={"/profile"} activeProps={{ className: "font-bold" }} className="transition-all hover:scale-105 hover:text-blue-500">
-          <Settings></Settings>
-        </Link>
-        <Link to={"/chat"} activeProps={{ className: "font-bold" }} className="transition-all hover:scale-105 hover:text-blue-500">
-        <TextIcon></TextIcon>
-        </Link>
-        {user ? (
-          <Button className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
-            onClick={() => {
-              signOut();
-            }} 
-          >
-            <LogOut></LogOut>
-          </Button>
-        ) : (
-          <Link
-            to={"/signin"}
-            activeProps={{
-              className: "font-bold",
-            }}
-            className="transition-all hover:scale-105 hover:text-blue-500"
-          >
-            <LogIn></LogIn>
-          </Link>
-        )}
+    <div className="flex flex-col min-h-screen">
+      <div className="p-4 flex gap-2 text-lg items-center justify-between flex-wrap md:pl-4 overflow-x-hidden">
+        {/* Left side: Logo/Home */}
+        <div className="flex items-center">
+          <div className="md:block hidden">
+            <Link
+              to="/"
+              className="font-bold transition-all hover:scale-105 hover:text-blue-500"
+            >
+              EXposio
+            </Link>
+          </div>
+          <div className="md:hidden block">
+            <Link
+              to="/"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <Home />
+            </Link>
+          </div>
+        </div>
+
+        {/* Middle: Navigation Links (About, Emotions, Chat) - Responsive */}
+        <div className="flex items-center gap-2 md:flex flex-grow justify-center">
+          <div className="md:flex hidden gap-2 items-center justify-center">
+            <Link
+              to={"/about"}
+              activeProps={{
+                className: "font-bold text-blue-500",
+              }}
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <BookMarked />
+            </Link>
+            <Link
+              to={"/emotions"}
+              activeProps={{ className: "font-bold text-blue-500" }}
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <Settings />
+            </Link>
+            <Link
+              to={"/chat"}
+              activeProps={{ className: "font-bold text-blue-500" }}
+              className="transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <TextIcon />
+            </Link>
+          </div>
+            {/* Mobile view navigation */}
+           <div className="md:hidden flex gap-2 items-center justify-center">
+            <Link
+              to={"/about"}
+              activeProps={{
+                className: "font-bold text-blue-500",
+              }}
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <BookMarked />
+            </Link>
+            <Link
+              to={"/emotions"}
+              activeProps={{ className: "font-bold text-blue-500" }}
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <Settings />
+            </Link>
+            <Link to={"/chat"} className="transition-all hover:scale-105 hover:text-blue-500">
+              <TextIcon />
+            </Link>
+          </div>
+        </div>
+          
+
+        {/* Right side: Sign In/Sign Out */}
+        <div className="flex gap-2 items-center">
+          {user !== null ? (
+            <Button
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              onClick={() => signOut()}
+            >
+              <LogOut />
+              <p className="text-sm md:block hidden">Sign Out</p>
+            </Button>
+          ) : (
+            <Link
+              to={"/signin"}
+              className="transition-all hover:scale-105 hover:text-blue-500"
+            >
+              <Button className="flex gap-2 items-center">
+                <LogIn />
+                <p className="text-sm md:block hidden">Sign In</p>
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
       <hr />
-      <Outlet />
+      <div className="flex-grow">
+        <Outlet />
+      </div>
       <Toaster richColors />
       <TanStackRouterDevtools position="bottom-right" />
-    </>
+    </div>
   );
 }
