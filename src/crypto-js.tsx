@@ -4,17 +4,24 @@ import { openDB } from 'idb';
 // Verwende einen Schlüssel, aber verstecke diesen am besten
 const encryptionKey = import.meta.env.VITE_PUBLIC_Encryption_Key;
 
-// Funktion zum Verschlüsseln von Daten
+// Funktion zum Verschlüsseln von Daten mit korrekter Initialisierung
 const encryptData = (data: any) => {
+  console.log(encryptionKey)
   const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
   return ciphertext;
 };
 
 // Funktion zum Entschlüsseln von Daten
 const decryptData = (ciphertext: string) => {
-  const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
-  const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-  return decryptedData;
+  try {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return decryptedData;
+  } catch (error) {
+    return null;
+  }
+  // const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+  // return decryptedData;
 };
 
 // IndexedDB öffnen/erstellen
@@ -34,7 +41,7 @@ const saveEmotion = async (emotionData: any) => {
     const db = await dbPromise;
     const encryptedData = encryptData(emotionData);
     const tx = db.transaction('emotions', 'readwrite');
-    tx.store.add({data: encryptedData});
+    tx.store.add({ data: encryptedData });
     await tx.done;
 };
 
@@ -43,7 +50,10 @@ const loadEmotions = async () => {
     const db = await dbPromise;
     const tx = db.transaction('emotions', 'readonly');
     const encryptedEmotions = await tx.store.getAll();
-    const decryptedEmotions = encryptedEmotions.map((entry) => decryptData(entry.data));
+    const decryptedEmotions = encryptedEmotions
+    .map((entry) => decryptData(entry.data))
+    .filter((entry) => entry !== null);
+
     return decryptedEmotions;
 };
 
@@ -52,7 +62,7 @@ const saveChatMessage = async (chatMessage: any) => {
     const db = await dbPromise;
     const encryptedData = encryptData(chatMessage);
     const tx = db.transaction('chat', 'readwrite');
-    tx.store.add({data: encryptedData});
+    tx.store.add({ data: encryptedData });
     await tx.done;
 };
 
@@ -60,9 +70,12 @@ const saveChatMessage = async (chatMessage: any) => {
 const loadChatMessages = async () => {
     const db = await dbPromise;
     const tx = db.transaction('chat', 'readonly');
-    const encryptedMessages = await tx.store.getAll();
-    const decryptedMessages = encryptedMessages.map((entry) => decryptData(entry.data));
+    const encryptedMessages = await tx.store.getAll()
+    const decryptedMessages = encryptedMessages
+    .map((entry) => decryptData(entry.data))
+    .filter((entry) => entry !== null);
     return decryptedMessages;
 }
 
-export {saveEmotion, loadEmotions, saveChatMessage, loadChatMessages};
+export { saveEmotion, loadEmotions, saveChatMessage, loadChatMessages, decryptData };
+

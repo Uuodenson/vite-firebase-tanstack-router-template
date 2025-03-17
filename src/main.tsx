@@ -3,6 +3,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { AuthContextProvider, useAuthContext } from "./helpers/authContext";
 import "./index.css";
+import { ThemeProvider } from "./helpers/ThemeProvider";
 
 // Set up a Router instance
 const router = createRouter({
@@ -24,11 +25,12 @@ function InnerApp() {
   const user = useAuthContext();
   return <RouterProvider router={router} context={{ user }} />;
 }
-
 function App() {
   return (
     <AuthContextProvider>
+      <ThemeProvider defaultTheme="light">
       <InnerApp/>
+      </ThemeProvider>
     </AuthContextProvider>
   );
 }

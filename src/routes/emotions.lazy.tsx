@@ -1,3 +1,4 @@
+"use client"
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { openDB } from "idb";
@@ -14,8 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
+import { Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -29,11 +29,21 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription, // Correct Import
+  AlertDialogHeader, // Correct Import
+  AlertDialogTitle, // Correct Import
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from "@uidotdev/usehooks";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -43,7 +53,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Moon } from "lucide-react";
-import { saveEmotion, loadEmotions } from "@/crypto-js";
+import { saveEmotion, loadEmotions, decryptData } from "@/crypto-js";
 export const Route = createLazyFileRoute("/emotions")({
   component: EmotionsTab,
 });
@@ -74,6 +84,7 @@ function EmotionsTab() {
   const [selectedEmotionData, setSelectedEmotionData] = useState<EmotionData | null>(null);
   const [strength, setStrength] = useState<number>(1);
   const [savedData, setSavedData] = useState<EmotionData[]>([]);
+  const [deleteItem, setDeleteItem] = useState<EmotionData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,7 +131,7 @@ function EmotionsTab() {
     date: item.date,
     score: getEmotionScore(item.emotion),
     emotion: item.emotion,
-    reason: item.reason,
+    reason: item.reason || "",
     strength: item.strength,
   }));
 
@@ -130,14 +141,14 @@ function EmotionsTab() {
   }, {});
 
   const chartDataForGraph = Object.entries(groupedData).map(([date, score]) => ({
-    date, score
+    date, score,
   }));
 
   const handleBarClick = (data: any) => {
     const clickedData = chartData.find((item) => item.date === data.date);
-    setSelectedEmotionData(clickedData || null);
+    setSelectedEmotionData(clickedData ?? null);
   };
-
+  
   const renderStars = (count: number) => {
     const stars = [];
     for (let i = 0; i < count; i++) {
@@ -156,20 +167,35 @@ function EmotionsTab() {
     setSavedData([]);
     localStorage.removeItem('emotionData');
   };
+  const handleDelete = async (item: EmotionData) => {
+    setDeleteItem(item);
+  };
+  const confirmDelete = async () => {
+    if (deleteItem) {
+      const db = await openDB('my-database', 1);
+      const tx = db.transaction('emotions', 'readwrite');
+      const allEntries = await tx.store.getAll();
+      const entryToDelete = allEntries.find(entry => decryptData(entry.data).date === deleteItem.date && decryptData(entry.data).emotion === deleteItem.emotion && decryptData(entry.data).reason === deleteItem.reason);
+      if (entryToDelete) await tx.store.delete(entryToDelete.id);
+      await tx.done;
+      setSavedData(savedData.filter(data => data !== deleteItem));
+      setDeleteItem(null);
+    }
+  }; 
 
   return (
     <div className="p-4 grid gap-4">
       <Dialog
-        open={selectedEmotionData !== null}
-        onOpenChange={() => setSelectedEmotionData(null)}
-      >
+          open={selectedEmotionData !== null}
+          onOpenChange={() => setSelectedEmotionData(null)}
+        >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {selectedEmotionData?.emotion}
-            </DialogTitle>
-            <DialogDescription>
-              Reason: {selectedEmotionData?.reason}
+            <DialogTitle>{selectedEmotionData?.emotion}</DialogTitle>
+            <DialogDescription className="grid gap-2">
+              <p>
+                Reason: {selectedEmotionData?.reason}
+              </p>
               <br />Strength: {renderStars(selectedEmotionData?.strength || 0)}
             </DialogDescription>
           </DialogHeader>
@@ -182,16 +208,13 @@ function EmotionsTab() {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2 ">
             <Label htmlFor="emotion" className="flex gap-2 items-center">
-              <Moon></Moon> Choose your Emotion
-            </Label>
-            <Select
-              onValueChange={setEmotion}
+              <Moon></Moon> Choose your Emotion</Label><Select onValueChange={setEmotion}
               defaultValue={emotion}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an emotion" />
               </SelectTrigger>
-              <SelectContent className="bg-background">
+              <SelectContent className="bg-white">
                 {emotions.map((emotionData) => (
                   <SelectItem
                     key={emotionData.name} value={emotionData.name}>
@@ -200,12 +223,9 @@ function EmotionsTab() {
                 ))}
               </SelectContent>
 
-            </Select>
-          </div>
+            </Select></div>
           <div className="grid gap-2">
-            <Label htmlFor="reason">
-              Reason (OCD related thoughts or triggers)
-            </Label>
+            <Label htmlFor="reason">Reason (OCD related thoughts or triggers)</Label>
             <Textarea
               className="resize-none"
               placeholder="e.g., I'm feeling anxious because of..."
@@ -214,9 +234,7 @@ function EmotionsTab() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="strength">
-              Strength (1-5)
-            </Label>
+            <Label htmlFor="strength">Strength (1-5)</Label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((num) => (
                 <button
@@ -229,9 +247,7 @@ function EmotionsTab() {
                 </button>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground">
-              How strong is this emotion?
-            </p>
+            <p className="text-sm text-muted-foreground">How strong is this emotion?</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSave}>Save</Button>
@@ -255,18 +271,37 @@ function EmotionsTab() {
                 <TableHead>Strength</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody >
               {savedData.length > 0 ? (
                 savedData.map((data, index) => (
-
-
-
                   <TableRow key={index} className={isSmallScreen ? "text-sm" : ""}>
                     <TableCell>{data.emotion}</TableCell>
                     <TableCell>{data.reason}</TableCell>
                     <TableCell>{data.date}</TableCell>
-                    <TableCell>{renderStars(data.strength)}</TableCell>
-                  </TableRow>
+                    <TableCell >{renderStars(data.strength)}</TableCell>
+                    <TableCell>
+                      <AlertDialog >
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="icon" onClick={() => handleDelete(data)}>
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete your entry.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="flex justify-end gap-2">
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>
+                          </div>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+
+                  </TableRow> 
                 ))
               ) : (
                 <TableRow>
@@ -291,22 +326,21 @@ function EmotionsTab() {
                   width="100%"
                   height={isSmallScreen ? 200 : 300}
                 >
-                  <BarChart
-                    data={chartDataForGraph}
+                  <LineChart
+                    data={chartData}
                     onClick={(data) =>
                       handleBarClick(data.activePayload?.[0]?.payload)
                     }
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="date"  />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="score" fill="#8884d8" />
-                  </BarChart>
+                    <Line type="monotone" dataKey="score" stroke="#8884d8" />
+                  </LineChart>
                 </ResponsiveContainer>
               ) : (
                 <TableRow>
-
                   <TableCell colSpan={2} className="text-center">
                     No emotions saved yet.
                   </TableCell>
@@ -319,3 +353,4 @@ function EmotionsTab() {
     </div>
   );
 }
+export default EmotionsTab;
