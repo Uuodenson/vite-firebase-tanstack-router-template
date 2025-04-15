@@ -81,4 +81,12 @@ const useTheme = () => {
     return context;
 };
 
-export { useTheme, ThemeProvider };
+function useSwitchTheme() {
+    const { setTheme } = useTheme();
+    return (theme: Theme) => {
+        setTheme(theme === "dark" ? "light" : "dark");
+    };
+}
+
+
+export { useTheme, useSwitchTheme, ThemeProvider };

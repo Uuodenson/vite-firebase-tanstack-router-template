@@ -1,9 +1,9 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { SigninAccount } from "@/components/loginAccount";
 import { useAuthContext } from "@/helpers/authContext";
 import { useEffect } from "react";
 
-export const Route = createFileRoute("/signin")({
+export const Route = createLazyFileRoute("/signin")({
   beforeLoad: ({ context, location }) => {
     if (!context.user) {
       throw redirect({

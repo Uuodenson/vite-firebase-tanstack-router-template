@@ -2,8 +2,8 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { AuthContextProvider, useAuthContext } from "./helpers/authContext";
-import "./index.css";
 import { ThemeProvider } from "./helpers/ThemeProvider";
+import "./index.css";
 
 // Set up a Router instance
 const router = createRouter({
@@ -27,14 +27,11 @@ function InnerApp() {
 }
 function App() {
   return (
-    <AuthContextProvider>
-      <ThemeProvider defaultTheme="light">
-      <InnerApp/>
-      </ThemeProvider>
-    </AuthContextProvider>
+    <ThemeProvider defaultTheme="system" children={<AuthContextProvider>
+      <InnerApp />
+    </AuthContextProvider>}/>
   );
 }
-
 const rootElement = document.getElementById("app")!;
 
 if (!rootElement.innerHTML) {

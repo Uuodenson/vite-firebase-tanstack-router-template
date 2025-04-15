@@ -3,18 +3,18 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { signOut } from "../helpers/auth";
 import { useAuthContext } from "../helpers/authContext";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Settings, Home, BookMarked, LogIn, LogOut, TextIcon } from "lucide-react";
+import { ModeToggle } from "@/components/themeswitcher";
 
 interface MyRouterContext {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any; //Make this any kind of user type
 }
-
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootComponent,
 });
@@ -30,7 +30,7 @@ function RootComponent() {
           <div className="md:block hidden">
             <Link
               to="/"
-              className="font-bold transition-all hover:scale-105 hover:text-blue-500"
+              className="font-bold transition-all hover:scale-10 hover:text-primary"
             >
               EXposio
             </Link>
@@ -38,7 +38,7 @@ function RootComponent() {
           <div className="md:hidden block">
             <Link
               to="/"
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105"
             >
               <Home />
             </Link>
@@ -53,21 +53,21 @@ function RootComponent() {
               activeProps={{
                 className: "font-bold text-blue-500",
               }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
               <BookMarked />
             </Link>
             <Link
               to={"/emotions"}
               activeProps={{ className: "font-bold text-blue-500" }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
               <Settings />
             </Link>
             <Link
               to={"/chat"}
               activeProps={{ className: "font-bold text-blue-500" }}
-              className="transition-all hover:scale-105 hover:text-blue-500"
+              className="transition-all hover:scale-105 hover:text-primary"
             >
               <TextIcon />
             </Link>
@@ -79,18 +79,18 @@ function RootComponent() {
               activeProps={{
                 className: "font-bold text-blue-500",
               }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
               <BookMarked />
             </Link>
             <Link
               to={"/emotions"}
               activeProps={{ className: "font-bold text-blue-500" }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
               <Settings />
             </Link>
-            <Link to={"/chat"} className="transition-all hover:scale-105 hover:text-blue-500">
+            <Link to={"/chat"} className="transition-all hover:scale-105 hover:text-primary">
               <TextIcon />
             </Link>
           </div>
@@ -101,7 +101,7 @@ function RootComponent() {
         <div className="flex gap-2 items-center">
           {user !== null ? (
             <Button
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-blue-500"
+              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
               onClick={() => signOut()}
             >
               <LogOut />
@@ -110,7 +110,7 @@ function RootComponent() {
           ) : (
             <Link
               to={"/signin"}
-              className="transition-all hover:scale-105 hover:text-blue-500"
+              className="transition-all hover:scale-105 hover:text-primary"
             >
               <Button className="flex gap-2 items-center">
                 <LogIn />
@@ -118,6 +118,7 @@ function RootComponent() {
               </Button>
             </Link>
           )}
+          <ModeToggle></ModeToggle>
         </div>
       </div>
       <hr />

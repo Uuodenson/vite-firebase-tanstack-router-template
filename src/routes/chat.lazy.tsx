@@ -1,5 +1,5 @@
 import { createLazyFileRoute, redirect, Link } from "@tanstack/react-router";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory, SafetySetting } from "@google/generative-ai";
 import { useState, useEffect, useRef, Fragment } from "react";
 import {
     Card,
@@ -15,21 +15,38 @@ import { Moon } from "lucide-react";
 import { saveChatMessage, loadChatMessages, saveEmotion } from "@/crypto-js";
 import { useAuthContext } from "@/helpers/authContext";
 import { useMediaQuery } from "@uidotdev/usehooks";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import { DialogHeader } from "@/components/ui/dialog";
 
 export const Route = createLazyFileRoute("/chat")({
     component: ChatPage,
 });
+interface DataData {
+    date: string;
+    content: string;
+    title: string;
+    emotion: string;
+    reason?: string;
+    strength: number;
+}
+type ResponseType = "question" | "emotion" | "journal" | "emergency";
+interface ResponseChat {
+    type: ResponseType[],
+    content: string;
+    data: { Emotion: DataData, Journal: DataData }
+}
 
 interface Message {
     role: "user" | "assistant";
     content: string;
+    resp?: ResponseChat;
 }
 interface EmotionData {
     emotion: string;
     reason?: string;
     date: string;
     strength: number;
-  }
+}
 
 function ChatPage() {
     const isSmallScreen = useMediaQuery('(max-width: 768px)');
@@ -44,9 +61,12 @@ function ChatPage() {
     const [reason, setReason] = useState<string>('');
 
     const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log(geminiApiKey)
     const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const Safety: SafetySetting = {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    }
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings: [Safety] },);
 
 
 
@@ -97,17 +117,17 @@ function ChatPage() {
                 { name: "Guilty", emoji: "😔" },
                 { name: "Ashamed", emoji: "😳" },
                 { name: "Other", emoji: "🤔" },
-              ];
-            const lowerCaseInput = input.toLowerCase();
-            if (lowerCaseInput.includes("kill myself") || lowerCaseInput.includes("suicide") || lowerCaseInput.includes("hurt myself")) {
-                setIsEmergency(true);
-            }
-            const foundEmotion = emotions.find(e => lowerCaseInput.includes(e.name.toLowerCase()));
-            if (foundEmotion) {
-                setIsEmotion(true);
-                setEmotion(foundEmotion.name);
-                setReason(input)
-            }
+            ];
+            // const lowerCaseInput = input.toLowerCase();
+            // if (lowerCaseInput.includes("kill myself") || lowerCaseInput.includes("suicide") || lowerCaseInput.includes("hurt myself")) {
+            //     setIsEmergency(true);
+            // }
+            // const foundEmotion = emotions.find(e => lowerCaseInput.includes(e.name.toLowerCase()));
+            // if (foundEmotion) {
+            //     setIsEmotion(true);
+            //     setEmotion(foundEmotion.name);
+            //     setReason(input)
+            // }
             setMessages((prevMessages) => [...prevMessages, assistantMessage]);
 
             const chat = model.startChat({
@@ -119,19 +139,67 @@ function ChatPage() {
                     };
                 }),
             });
+            const task = import.meta.env.VITE_TASK_EXPLAINED;
+            const result = await chat.sendMessage(task + input);
+            const response = result.response;
+            let generatedText;
+            try {
+                generatedText = response.text()
+                    .trim()
+                    .replace(/^```(json)?\n?/g, '')
+                    .replace(/\n?```$/g, '')
+                    .replace(/^\s*\n+/g, '');
+                console.log(generatedText)
+                // Validate JSON before parsing
+                const parsedResponse: ResponseChat = JSON.parse(generatedText);
+                if (parsedResponse.type.includes("emergency")) {
+                    setIsEmergency(true)
+                }
+                if (user) {
+                    // Speichere die Chat-Nachricht
+                    await saveChatMessage({
+                        role: "assistant",
+                        content: parsedResponse.content,
+                        resp: parsedResponse
+                    });
 
-            const result = await chat.sendMessage(input);
-            const response = await result.response;
-            const generatedText = response.text().replace(/^(.*?)(\n\n|$)/, '');
+                    // Wenn es eine Emotion gibt, speichere sie
+                    if (parsedResponse.type.includes("emotion") && parsedResponse.data) {
+                        const emotionData: EmotionData = {
+                            emotion: parsedResponse.data.Emotion.emotion,
+                            reason: parsedResponse.data.Emotion.reason,
+                            date: parsedResponse.data.Emotion.date || new Date().toLocaleDateString(),
+                            strength: parsedResponse.data.Emotion.strength || 3
+                        };
+                        await saveEmotion(emotionData);
+                        tos.success("Emotion wurde gespeichert");
+                    }
+                }
 
-
-            if (user) await saveChatMessage({ role: "assistant", content: generatedText });
-            setMessages((prevMessages) => {
-                const updatedMessages = [...prevMessages]
-                const lastIndex = updatedMessages.length - 1
-                updatedMessages[lastIndex].content = generatedText
-                return updatedMessages
-            });
+                setMessages((prevMessages) => {
+                    const updatedMessages = [...prevMessages];
+                    const lastIndex = updatedMessages.length - 1;
+                    updatedMessages[lastIndex].content = parsedResponse.content;
+                    updatedMessages[lastIndex].resp = parsedResponse;
+                    return updatedMessages;
+                });
+            } catch (error) {
+                // Handle invalid JSON response
+                const errorMessage = "Invalid response format from AI";
+                setMessages((prevMessages) => {
+                    const updatedMessages = [...prevMessages];
+                    const lastIndex = updatedMessages.length - 1;
+                    updatedMessages[lastIndex].content = errorMessage;
+                    return updatedMessages;
+                });
+                tos.error("Error", {
+                    description: "Invalid response format. Please try again.",
+                    action: {
+                        label: "Retry",
+                        onClick: () => setInput(input)
+                    }
+                });
+            }
         } catch (error) {
             tos.error("Error", {
                 description: "Something went wrong. Please try again later.",
@@ -157,7 +225,11 @@ function ChatPage() {
             setReason("")
         }
         if (isEmergency) {
+            redirect({
+                to: "/emergency"
+            })
             tos.warning("Emergency detected", { description: "Please click on the button to get help." })
+            setIsEmergency(false);
         } else {
             setIsLoading(false);
         }
@@ -175,7 +247,7 @@ function ChatPage() {
                     </CardTitle>
                 </CardHeader>
                 {isEmergency && (
-                    <div className="p-2">
+                    <div className="p-2 w-screen h-screen bg-white z-30">
                         <Button asChild>
                             <Link to={"/emergency"}>Emergency</Link>
                         </Button>
@@ -192,7 +264,24 @@ function ChatPage() {
                                             : "bg-gray-100 self-start"
                                             }`}
                                     >
-                                        {message.content}
+                                        <p>{message.content}</p>
+                                        <div>
+                                            {(message.resp?.type.find((res) => { return res == "emotion" })) && (
+                                                <Button onClick={() => {
+                                                    const newData: EmotionData = {
+                                                        emotion: message.resp?.data.Emotion.emotion || "Error",
+                                                        reason: message.resp?.data.Emotion.reason,
+                                                        date: message.resp?.data.Emotion.date || new Date().toLocaleDateString(),
+                                                        strength: message.resp?.data.Emotion.strength || 3
+                                                    };
+                                                    saveEmotion(newData);
+                                                    tos.success("Emotion wurde gespeichert");
+                                                }}>Emotion speichern</Button>
+                                            )}
+                                            {(message.resp?.type.find((res) => { return res == "journal" })) && (
+                                                <Button onClick={() => { }}>Save Journal</Button>
+                                            )}
+                                        </div>
                                     </div>
                                 </Fragment>
                             ))}
@@ -209,13 +298,26 @@ function ChatPage() {
                     </div>
                 </CardContent>
             </Card>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline">Open Dialog</Button>
+                </DialogTrigger>
+                <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md bg-white rounded-lg shadow-lg p-6">
+                    <DialogHeader>
+                        <DialogTitle>Alles was du hier reinschreibst wird nicht gespeichert</DialogTitle>
+                        <DialogTrigger>
+                            <Button variant={"outline"} >Close</Button>
+                        </DialogTrigger>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
             <div className="flex gap-2">
-            <Button onClick={handleSendMessage} disabled={isLoading}>
-                Send
-            </Button>
-                        <Button onClick={handleNewChat} variant="outline">
-                            New Chat
-                        </Button>
+                <Button variant={"outline"} onClick={handleSendMessage} disabled={isLoading}>
+                    Send
+                </Button>
+                <Button onClick={handleNewChat} variant="outline">
+                    New Chat
+                </Button>
             </div>
         </div>
     );

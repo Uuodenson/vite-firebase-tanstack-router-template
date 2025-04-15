@@ -58,7 +58,7 @@ export const Route = createLazyFileRoute("/emotions")({
   component: EmotionsTab,
 });
 
-interface EmotionData {
+export interface EmotionData {
   emotion: string;
   reason?: string;
   date: string;

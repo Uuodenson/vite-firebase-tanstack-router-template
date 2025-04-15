@@ -1,27 +1,52 @@
 import CryptoJS from 'crypto-js';
 import { openDB } from 'idb';
+import { EmotionData } from './routes/emotions.lazy';
 
 // Verwende einen Schlüssel, aber verstecke diesen am besten
-const encryptionKey = import.meta.env.VITE_PUBLIC_Encryption_Key;
+const encryptionKey = import.meta.env.VITE_ENCRYPTION_KEY;
 
-// Funktion zum Verschlüsseln von Daten mit korrekter Initialisierung
-const encryptData = (data: any) => {
-  console.log(encryptionKey)
-  const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
-  return ciphertext;
+// Konfiguration für die Verschlüsselung
+const cfg = {
+  mode: CryptoJS.mode.CBC,
+  padding: CryptoJS.pad.Pkcs7
+};
+
+// Funktion zum Verschlüsseln von Daten
+const encryptData = (data: any, customKey: string = 'share') => {
+  const key = encryptionKey || customKey;
+  if (!key) {
+    throw new Error('Encryption key is not properly initialized');
+  }
+  const jsonString = JSON.stringify(data);
+  return CryptoJS.AES.encrypt(jsonString, key, cfg).toString();
 };
 
 // Funktion zum Entschlüsseln von Daten
-const decryptData = (ciphertext: string) => {
-  try {
-    const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    return decryptedData;
-  } catch (error) {
+const decryptData = (encryptedBase64: string, customKey: string = 'share') => {
+  if (!encryptedBase64 || typeof encryptedBase64 !== 'string') {
+    console.error('Invalid encrypted data format');
     return null;
   }
-  // const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-  // return decryptedData;
+
+  const key = encryptionKey || customKey;
+  if (!key) {
+    console.error('Encryption key not initialized');
+    return null;
+  }
+
+  try {
+    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, cfg);
+    if (decrypted) {
+      const str = decrypted.toString(CryptoJS.enc.Utf8);
+      if (str.length > 0) {
+        return JSON.parse(str);
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Decryption error:', error);
+    return null;
+  }
 };
 
 // IndexedDB öffnen/erstellen
@@ -37,44 +62,45 @@ const dbPromise = openDB('my-database', 1, {
 });
 
 // Emotionen speichern
-const saveEmotion = async (emotionData: any) => {
-    const db = await dbPromise;
-    const encryptedData = encryptData(emotionData);
-    const tx = db.transaction('emotions', 'readwrite');
-    tx.store.add({ data: encryptedData });
-    await tx.done;
+const saveEmotion = async (emotionData: EmotionData) => {
+  const db = await dbPromise;
+  const encryptedData = encryptData(emotionData);
+  alert(encryptedData)
+  const tx = db.transaction('emotions', 'readwrite');
+  tx.store.add({ data: encryptedData });
+  await tx.done;
 };
 
 // Emotionen lesen
 const loadEmotions = async () => {
-    const db = await dbPromise;
-    const tx = db.transaction('emotions', 'readonly');
-    const encryptedEmotions = await tx.store.getAll();
-    const decryptedEmotions = encryptedEmotions
+  const db = await dbPromise;
+  const tx = db.transaction('emotions', 'readonly');
+  const encryptedEmotions = await tx.store.getAll();
+  const decryptedEmotions = encryptedEmotions
     .map((entry) => decryptData(entry.data))
     .filter((entry) => entry !== null);
 
-    return decryptedEmotions;
+  return decryptedEmotions;
 };
 
 // Chat Nachrichten speichern
 const saveChatMessage = async (chatMessage: any) => {
-    const db = await dbPromise;
-    const encryptedData = encryptData(chatMessage);
-    const tx = db.transaction('chat', 'readwrite');
-    tx.store.add({ data: encryptedData });
-    await tx.done;
+  const db = await dbPromise;
+  const encryptedData = encryptData(chatMessage);
+  const tx = db.transaction('chat', 'readwrite');
+  tx.store.add({ data: encryptedData });
+  await tx.done;
 };
 
 // Chat Nachrichten laden
 const loadChatMessages = async () => {
-    const db = await dbPromise;
-    const tx = db.transaction('chat', 'readonly');
-    const encryptedMessages = await tx.store.getAll()
-    const decryptedMessages = encryptedMessages
+  const db = await dbPromise;
+  const tx = db.transaction('chat', 'readonly');
+  const encryptedMessages = await tx.store.getAll()
+  const decryptedMessages = encryptedMessages
     .map((entry) => decryptData(entry.data))
     .filter((entry) => entry !== null);
-    return decryptedMessages;
+  return decryptedMessages;
 }
 
 export { saveEmotion, loadEmotions, saveChatMessage, loadChatMessages, decryptData };
