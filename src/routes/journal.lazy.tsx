@@ -1,10 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -104,7 +99,6 @@ function Journal() {
     }
   };
 
-
   return (
     <div className="p-4 grid gap-4">
       <Dialog>
@@ -112,7 +106,7 @@ function Journal() {
           <Button>Add Note</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+          <DialogHeader>
             {isEditing ? (
               <DialogTitle>Edit Note</DialogTitle>
             ) : (
@@ -126,7 +120,7 @@ function Journal() {
               value={newNoteTitle}
               onChange={(e) => setNewNoteTitle(e.target.value)}
             />
-            
+
             <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
@@ -136,7 +130,11 @@ function Journal() {
           </div>
           {isEditing ? (
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={handleCancelEdit}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelEdit}
+              >
                 Cancel
               </Button>
               <Button type="button" onClick={handleUpdateNote}>
@@ -155,23 +153,22 @@ function Journal() {
           <Card key={note.id} className="transition-all hover:scale-105">
             <CardHeader className="flex justify-between items-center">
               <CardTitle>{note.title}</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDeleteNote(note.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </CardHeader>
             <CardContent>
               {renderNoteContent(note)}
               {!selectedNote && (
-                <Button
-                  onClick={() => handleEditNote(note)}
-                  className="mt-2"
-                >
-                  Edit
-                </Button>
+                <div className="w-1/2 flex flex-row justify-around items-center  mt-2">
+                  <Button onClick={() => handleEditNote(note)}>
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteNote(note.id)}
+                  >
+                    <Trash2 className="" />
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

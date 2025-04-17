@@ -254,14 +254,14 @@ function ChatPage() {
                     </div>
                 )}
                 <CardContent className="grid gap-4">
-                    <ScrollArea className={`h-[500px] overflow-y-auto ${isSmallScreen ? "w-full" : ""}`} ref={chatContainerRef}>
+                    <ScrollArea className={`h-50 overflow-y-auto ${isSmallScreen ? "w-full" : ""}`} ref={chatContainerRef}>
                         <div className="flex flex-col gap-2">
                             {messages.map((message, index) => (
                                 <Fragment key={index}>
                                     <div
                                         className={`p-2 rounded-md ${message.role === "user"
-                                            ? "bg-blue-100 self-end"
-                                            : "bg-gray-100 self-start"
+                                            ? "bg-primary self-end"
+                                            : "bg-secondary self-start"
                                             }`}
                                     >
                                         <p>{message.content}</p>
@@ -302,7 +302,7 @@ function ChatPage() {
                 <DialogTrigger asChild>
                     <Button variant="outline">Open Dialog</Button>
                 </DialogTrigger>
-                <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md bg-white rounded-lg shadow-lg p-6">
+                <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md rounded-lg shadow-lg p-6">
                     <DialogHeader>
                         <DialogTitle>Alles was du hier reinschreibst wird nicht gespeichert</DialogTitle>
                         <DialogTrigger>

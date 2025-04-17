@@ -57,7 +57,7 @@ import { saveEmotion, loadEmotions, decryptData } from "@/crypto-js";
 export const Route = createLazyFileRoute("/emotions")({
   component: EmotionsTab,
 });
-
+import {Trash2} from "lucide-react";
 export interface EmotionData {
   emotion: string;
   reason?: string;
@@ -152,7 +152,7 @@ function EmotionsTab() {
   const renderStars = (count: number) => {
     const stars = [];
     for (let i = 0; i < count; i++) {
-      stars.push(<span key={i}>★</span>);
+      stars.push(<span className="" key={i}>★</span>);
     }
     for (let i = count; i < 5; i++) {
       stars.push(<span key={i}>☆</span>);
@@ -196,7 +196,11 @@ function EmotionsTab() {
               <p>
                 Reason: {selectedEmotionData?.reason}
               </p>
-              <br />Strength: {renderStars(selectedEmotionData?.strength || 0)}
+              <br />Strength: {
+                <div className="flex gap-2">
+              {renderStars(selectedEmotionData?.strength || 0)}
+                </div>
+              }
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
@@ -214,7 +218,7 @@ function EmotionsTab() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an emotion" />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent>
                 {emotions.map((emotionData) => (
                   <SelectItem
                     key={emotionData.name} value={emotionData.name}>
@@ -283,7 +287,7 @@ function EmotionsTab() {
                       <AlertDialog >
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="icon" onClick={() => handleDelete(data)}>
-                            Delete
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -317,37 +321,51 @@ function EmotionsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Emotion Chart</CardTitle>
+          <Button
+            onClick={() => {
+              // Prepare CSV content
+              const csvHeaders = "Date,Score,Emotion,Reason,Strength\n";
+              const csvRows = chartData.map(
+                (e) =>
+                  `${e.date},${e.score},"${e.emotion}","${e.reason}",${e.strength}`
+              );
+              const csvContent = `data:text/csv;charset=utf-8,${csvHeaders}${csvRows.join("\n")}`;
+              
+              // Create a downloadable link
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", "emotions.csv");
+              document.body.appendChild(link); // Required for Firefox
+              link.click();
+              document.body.removeChild(link); // Clean up
+            }}
+          >
+            Export Data
+          </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableBody>
-              {chartData.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
-                  height={isSmallScreen ? 200 : 300}
-                >
-                  <LineChart
-                    data={chartData}
-                    onClick={(data) =>
-                      handleBarClick(data.activePayload?.[0]?.payload)
-                    }
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date"  />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="score" stroke="#8884d8" />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={2} className="text-center">
-                    No emotions saved yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer
+              width="100%"
+              height={isSmallScreen ? 200 : 300}
+            >
+              <LineChart
+                data={chartData}
+                onClick={(data) =>
+                  handleBarClick(data.activePayload?.[0]?.payload)
+                }
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="score" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-center">No emotions saved yet.</p>
+          )}
         </CardContent>
       </Card>
     </div>

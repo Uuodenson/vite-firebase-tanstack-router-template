@@ -93,7 +93,7 @@ export function CreateAccount() {
       <CardFooter>
         <p>
           Already have an account?{" "}
-          <Link className="text-blue-500" to="/signin">
+          <Link className="text-blue-500" to="/signup">
             Sign in here
           </Link>
         </p>

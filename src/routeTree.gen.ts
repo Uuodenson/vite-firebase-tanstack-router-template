@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TherapeutClientdataImport } from './routes/therapeut/client_data'
 
 // Create Virtual Routes
 
@@ -89,6 +90,12 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
+const TherapeutClientdataRoute = TherapeutClientdataImport.update({
+  id: '/therapeut/client_data',
+  path: '/therapeut/client_data',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -163,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupLazyImport
       parentRoute: typeof rootRoute
     }
+    '/therapeut/client_data': {
+      id: '/therapeut/client_data'
+      path: '/therapeut/client_data'
+      fullPath: '/therapeut/client_data'
+      preLoaderRoute: typeof TherapeutClientdataImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -179,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileLazyRoute
   '/signin': typeof SigninLazyRoute
   '/signup': typeof SignupLazyRoute
+  '/therapeut/client_data': typeof TherapeutClientdataRoute
 }
 
 export interface FileRoutesByTo {
@@ -192,6 +207,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileLazyRoute
   '/signin': typeof SigninLazyRoute
   '/signup': typeof SignupLazyRoute
+  '/therapeut/client_data': typeof TherapeutClientdataRoute
 }
 
 export interface FileRoutesById {
@@ -206,6 +222,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileLazyRoute
   '/signin': typeof SigninLazyRoute
   '/signup': typeof SignupLazyRoute
+  '/therapeut/client_data': typeof TherapeutClientdataRoute
 }
 
 export interface FileRouteTypes {
@@ -221,6 +238,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/therapeut/client_data'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -233,6 +251,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/therapeut/client_data'
   id:
     | '__root__'
     | '/'
@@ -245,6 +264,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/therapeut/client_data'
   fileRoutesById: FileRoutesById
 }
 
@@ -259,6 +279,7 @@ export interface RootRouteChildren {
   ProfileLazyRoute: typeof ProfileLazyRoute
   SigninLazyRoute: typeof SigninLazyRoute
   SignupLazyRoute: typeof SignupLazyRoute
+  TherapeutClientdataRoute: typeof TherapeutClientdataRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -272,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileLazyRoute: ProfileLazyRoute,
   SigninLazyRoute: SigninLazyRoute,
   SignupLazyRoute: SignupLazyRoute,
+  TherapeutClientdataRoute: TherapeutClientdataRoute,
 }
 
 export const routeTree = rootRoute
@@ -293,7 +315,8 @@ export const routeTree = rootRoute
         "/journal",
         "/profile",
         "/signin",
-        "/signup"
+        "/signup",
+        "/therapeut/client_data"
       ]
     },
     "/": {
@@ -325,6 +348,9 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.lazy.tsx"
+    },
+    "/therapeut/client_data": {
+      "filePath": "therapeut/client_data.tsx"
     }
   }
 }
