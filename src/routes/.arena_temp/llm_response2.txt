@@ -1,0 +1,22 @@
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { Dispatch, JSX, useState, FormEvent, ChangeEvent } from "react";
+
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "@/components/ui/use-toast";
+
+export const Route = createLazyFileRoute("/profile")({
+  component: Index,
+});
+interface ProfileData{
+function Index(): JSX.Element {
+  const ExampleData : ProfileData = {
+    name: "example",
+    age: 0,
+    email: "example",
+    ProfilePic: 0,
+  }
+  const [profiledata, ProfileData] : [ProfileData,  Dispatch<ProfileData>]= useState(ExampleData);
+  return (
+    <div className="p-2">

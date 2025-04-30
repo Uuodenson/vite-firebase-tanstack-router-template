@@ -8,7 +8,7 @@ import { signOut } from "../helpers/auth";
 import { useAuthContext } from "../helpers/authContext";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Settings, Home, BookMarked, LogIn, LogOut, TextIcon } from "lucide-react";
+import { Settings, Home, BookMarked, LogIn, LogOut, TextIcon, BadgeInfo} from "lucide-react";
 import { ModeToggle } from "@/components/themeswitcher";
 
 interface MyRouterContext {
@@ -46,49 +46,35 @@ function RootComponent() {
         </div>
 
         {/* Middle: Navigation Links (About, Emotions, Chat) - Responsive */}
-        <div className="flex items-center gap-2 md:flex flex-grow justify-center">
+        <div className="flex items-center gap-2 md:flex flex-grow justify-center-safe">
           <div className="md:flex hidden gap-2 items-center justify-center">
             <Link
               to={"/about"}
               activeProps={{
-                className: "font-bold text-blue-500",
+                className: "font-bold text-primary",
               }}
               className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
-              <BookMarked />
-            </Link>
-            <Link
-              to={"/emotions"}
-              activeProps={{ className: "font-bold text-blue-500" }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
-            >
-              <Settings />
+              <BadgeInfo />
             </Link>
             <Link
               to={"/chat"}
-              activeProps={{ className: "font-bold text-blue-500" }}
+              activeProps={{ className: "font-bold text-primary" }}
               className="transition-all hover:scale-105 hover:text-primary"
             >
               <TextIcon />
             </Link>
           </div>
             {/* Mobile view navigation */}
-           <div className="md:hidden flex gap-2 items-center justify-center">
+           <div className="md:hidden flex gap-2 items-center justify-center"> 
             <Link
               to={"/about"}
               activeProps={{
-                className: "font-bold text-blue-500",
+                className: "font-bold text-primary",
               }}
               className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
             >
-              <BookMarked />
-            </Link>
-            <Link
-              to={"/emotions"}
-              activeProps={{ className: "font-bold text-blue-500" }}
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
-            >
-              <Settings />
+              <BadgeInfo />
             </Link>
             <Link to={"/chat"} className="transition-all hover:scale-105 hover:text-primary">
               <TextIcon />
@@ -100,13 +86,7 @@ function RootComponent() {
         {/* Right side: Sign In/Sign Out */}
         <div className="flex gap-2 items-center">
           {user !== null ? (
-            <Button
-              className="flex gap-2 items-center transition-all hover:scale-105 hover:text-primary"
-              onClick={() => signOut()}
-            >
-              <LogOut />
-              <p className="text-sm md:block hidden">Sign Out</p>
-            </Button>
+            <></>
           ) : (
             <Link
               to={"/signin"}

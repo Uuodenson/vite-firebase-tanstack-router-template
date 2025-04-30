@@ -1,0 +1,69 @@
+
+```typescriptreact
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { Dispatch, JSX, useState, FormEvent, ChangeEvent } from "react";
+import { Dispatch, JSX, useState } from "react";
+
+
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "@/components/ui/use-toast";
+
+export const Route = createLazyFileRoute("/profile")({
+  component: Index,
+});
+interface ProfileData{
+  name: string,
+  age: number,
+  email: string,
+  ProfilePic: number,
+interface ProfileData {
+  name: string;
+  age: number;
+  email: string;
+  ProfilePic: number;
+}
+
+function Index(): JSX.Element {
+
+  const ExampleData : ProfileData = {
+  const initialData: ProfileData = {
+    name: "example",
+    age: 0,
+    email: "example",
+    ProfilePic: 0,
+  }
+  const [profiledata, ProfileData] : [ProfileData,  Dispatch<ProfileData>]= useState(ExampleData);
+  };
+  const [profileData, setProfileData]: [ProfileData, Dispatch<ProfileData>] = useState(initialData);
+
+  return (
+    <div className="p-2">
+    <Card>
+      <CardTitle>
+        Your Profile
+      </CardTitle>
+      <CardContent>
+        <form>
+          <label>Name</label><br/>
+          <input type="text"></input><br/>
+          <label>Email</label><br/>
+          <input type="email"></input><br/>
+          <input type="submit" value="Submit"/>
+        </form>
+      <Card>
+        <CardTitle>Your Profile</CardTitle>
+        <CardContent>
+          <form>
+            <Label>Name</Label>
+            <input type="text" value={profileData.name} onChange={(e) => setProfileData({ ...profileData, name: e.target.value })} />
+            <Label>Email</Label>
+            <input type="email" value={profileData.email} onChange={(e) => setProfileData({ ...profileData, email: e.target.value })} />
+            <input type="submit" value="Submit" />
+          </form>
+      </CardContent>
+    </Card>
+    </div>
+  );
+}
