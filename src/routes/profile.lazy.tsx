@@ -3,6 +3,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { Dispatch, JSX, useState, FormEvent, ChangeEvent } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export const Route = createLazyFileRoute("/profile")({
   component: Index,
@@ -26,7 +27,7 @@ function Index(): JSX.Element {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    console.log(profileData);
+    save
   };
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,33 +39,21 @@ function Index(): JSX.Element {
   };
 
   return (
-    <div className="p-2">
-      <Card>
-        <CardTitle>Your Profile</CardTitle>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={profileData.name}
-                onChange={handleNameChange}
-              />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={profileData.email}
-                onChange={handleEmailChange}
-              />
-            </div>
-            <input type="submit" value="Submit" />
-          </form>
-        </CardContent>
-      </Card>
+    <div>
+        <Card className="w-1/2 flex m-auto p-2">
+          <CardTitle className="flex flex-row items-center justify-evenly">
+            <p>Dein Profil</p>
+          </CardTitle>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <Label>Name</Label>
+              <Input value={profileData.name} onChange={handleNameChange} />
+              <Label>E-Mail</Label>
+              <Input value={profileData.email} onChange={handleEmailChange} />
+              <Button type="submit">Speichern</Button>
+            </form>
+          </CardContent>
+        </Card>
     </div>
   );
 }

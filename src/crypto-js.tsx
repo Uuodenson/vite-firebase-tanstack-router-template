@@ -208,6 +208,17 @@ const verifyShareKey = async (shareKey: string) => {
   return true;
 };
 
+interface ProfileData {
+  name: "example",
+  age: 0,
+  email: "example",
+  ProfilePic: 0,
+};
+
+const saveProfileData = async (profileData:ProfileData)=>{
+    const db = await 
+}
+
 export { 
   saveEmotion, 
   loadEmotions, 
